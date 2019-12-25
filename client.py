@@ -23,7 +23,7 @@ $$ |  $$ |\$$$$$$$\ \$$$$$$$ |$$ |  $$ |\$$$$$$$ |$$ |      \$$$$$$$ |
                     \$$$$$$  |    
                     \n                                    
 """
-        print(header)
+        #print(header)
         self.serverHost = input("Host: ")
         self.serverPort = int(input("Port: "))
         self.socket = None

