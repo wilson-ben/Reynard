@@ -10,7 +10,7 @@ class Client(object):
 
     def __init__(self):
         # self.serverHost = '192.168.1.9'
-        print("\n
+        header = """
 $$$$$$$\                                                          $$\ 
 $$  __$$\                                                         $$ |
 $$ |  $$ | $$$$$$\  $$\   $$\ $$$$$$$\   $$$$$$\   $$$$$$\   $$$$$$$ |
@@ -22,7 +22,8 @@ $$ |  $$ |\$$$$$$$\ \$$$$$$$ |$$ |  $$ |\$$$$$$$ |$$ |      \$$$$$$$ |
                     $$\   $$ |                                        
                     \$$$$$$  |    
                     \n                                    
-")
+"""
+        print(header)
         self.serverHost = input("Host: ")
         self.serverPort = int(input("Port: "))
         self.socket = None
