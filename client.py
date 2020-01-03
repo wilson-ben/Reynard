@@ -5,6 +5,8 @@ import time
 import signal
 import sys
 import struct
+import nmap
+
 
 class Client(object):
 
